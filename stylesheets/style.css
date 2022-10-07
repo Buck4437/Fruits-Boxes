@@ -1,16 +1,30 @@
 body {
     margin: 0px;
     padding: 0px;
+    background-color: lightgreen;
 }
 
 #app {
-    width: 100vw;
-    height: 100vh;
+    
+}
+
+.game {
+    /* width: 100vw;
+    height: 100vh; */
     display: flex;
     flex-direction: column;
     justify-content: center;
     align-items: center;
 }
+
+.game-field {
+    position: relative;
+}
+
+.score {
+    color: black;
+}
+
 
 table {
     margin: 0 auto;
@@ -20,6 +34,7 @@ table {
     position: absolute;
     top: 0;
     z-index: 200;
+    background-color: #1f1e3330;
 }
 
 .component.fruit-component {
@@ -27,14 +42,11 @@ table {
 }
 
 .component.fruit-component img {
-    width: 50px;
-    height: 50px;
+    width: 30px;
+    height: 30px;
 }
 
 .component.fruit-component .fruit-value {
-    color: white;
-    font-size: 24px;
-    font-family: Arial, Helvetica, sans-serif;
     font-weight: bold;
 	position: absolute;
 	z-index: 100;

@@ -1,8 +1,14 @@
 const app = new Vue({
     el: "#app",
     data: {
+
+        // Options
         fruitTypes: 4,
         sumRequirement: 10,
+        row: 40,
+        column: 1,
+
+        // Game related
         score: 0,
         grid: [],
         selected: new Set(),
@@ -72,6 +78,7 @@ const app = new Vue({
                     fruits[fruit.type] = [fruit];
                 }
             }
+            let cumulative = 0, combo = 0;
             for (let type in fruits) {
                 let sum = 0, count = 0;
                 for (let fruit of fruits[type]) {
@@ -85,8 +92,10 @@ const app = new Vue({
                 for (let fruit of fruits[type]) {
                     fruit.val = null;
                 }
-                this.score += count;
+                cumulative += count;
+                combo += 1;
             }
+            this.score += cumulative * combo;
         },
         drawSelectionBox() {
             if (!this.drawingMode) return;
@@ -94,20 +103,22 @@ const app = new Vue({
             const context = canvas.getContext('2d');
             this.clearCanvas()
 
-            let [xStart, yStart] = this.mousePos.start;
-            let [xEnd, yEnd] = this.mousePos.end;
+            const viewportOffset = canvas.getBoundingClientRect();
+            const [xBase, yBase] = [viewportOffset.left, viewportOffset.top];
+            const [xStart, yStart] = this.mousePos.start;
+            const [xEnd, yEnd] = this.mousePos.end;
 
             const [xSgn, ySgn] = [xEnd > xStart ? 1 : -1, yEnd > yStart ? 1 : -1]
 
             // Draws border
             context.fillStyle = "#aaaaaa";
-            context.fillRect(xStart, yStart, xEnd-xStart + 4 * xSgn, yEnd-yStart + 4 * ySgn);
+            context.fillRect(xStart - xBase, yStart - yBase, xEnd-xStart + 4 * xSgn, yEnd-yStart + 4 * ySgn);
 
             // Draws selection box
             context.fillStyle = "rgb(160, 160, 160, 0.15)";
             
-            context.clearRect(xStart + 2 * xSgn, yStart + 2 * ySgn, xEnd-xStart, yEnd-yStart);
-            context.fillRect(xStart + 2 * xSgn, yStart + 2 * ySgn, xEnd-xStart, yEnd-yStart);
+            context.clearRect(xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase, xEnd-xStart, yEnd-yStart);
+            context.fillRect(xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase, xEnd-xStart, yEnd-yStart);
         },
         clearCanvas() {
             const canvas = document.querySelector("#selection-box-canvas")
@@ -120,7 +131,7 @@ const app = new Vue({
         }
     },
     created() {
-        this.generateGrid(12, 20);
+        this.generateGrid(this.row, this.column);
     },
     mounted() {
         document.addEventListener("mousedown", this.handleMouseDown);
@@ -131,6 +142,7 @@ const app = new Vue({
             this.drawSelectionBox()
             this.forceRerender();
         })
+        rescaleCanvas();
     }
 });
 

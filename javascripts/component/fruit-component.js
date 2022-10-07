@@ -18,8 +18,9 @@ Vue.component("fruit-component", {
             if (start[0] == end[0] && start[1] == end[1]) {
                 return false
             }
-            const [minX, minY] = [Math.min(start[0], end[0]), Math.min(start[1], end[1])]
-            const [maxX, maxY] = [Math.max(start[0], end[0]), Math.max(start[1], end[1])]
+            const [scrollX, scrollY] = [window.scrollX, window.scrollY]
+            const [minX, minY] = [Math.min(start[0], end[0]) + scrollX, Math.min(start[1], end[1]) + scrollY]
+            const [maxX, maxY] = [Math.max(start[0], end[0]) + scrollX, Math.max(start[1], end[1]) + scrollY]
             const [posX, posY] = this.avgPos;
             return minX <= posX && posX <= maxX && minY <= posY && posY <= maxY;
         },

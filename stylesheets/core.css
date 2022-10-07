@@ -1,3 +1,9 @@
+html {
+    color: white;
+    font-size: 16px;
+    font-family: monospace;
+}
+
 .disable-select {
     user-select: none;
 }

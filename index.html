@@ -9,21 +9,23 @@
     </head>
     <body>
         <div id="app">
-            Score: {{score}}
-            <table>
-                <tr v-for="(row, i) in grid">
-                    <td v-for="(fruit, j) in row">
-                        <fruit-component :src="fruit.src"
-                                         :box="mousePos"
-                                         :deleted="fruit.val == null"
-                                         :key="reloadKey"
-                                         @change="state => updateSelectedState(i, j, state)">{{fruit.val}}</fruit-component>
-                    </td>
-                </tr>
-            </table>
-            <canvas id="selection-box-canvas">
-
-            </canvas>
+            <div class="game">
+                <span class="score">Score: {{score}}</span>
+                <div class="game-field">
+                    <table>
+                        <tr v-for="(row, i) in grid">
+                            <td v-for="(fruit, j) in row">
+                                <fruit-component :src="fruit.src"
+                                                :box="mousePos"
+                                                :deleted="fruit.val == null"
+                                                :key="reloadKey"
+                                                @change="state => updateSelectedState(i, j, state)">{{fruit.val}}</fruit-component>
+                            </td>
+                        </tr>
+                    </table>
+                    <canvas id="selection-box-canvas"></canvas>
+                </div>
+            </div>
         </div>
     </body>
     <script src="javascripts/lib/vue.js"></script>
