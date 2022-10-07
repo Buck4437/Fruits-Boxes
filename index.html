@@ -1,0 +1,34 @@
+<html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <link rel="stylesheet" href="stylesheets/core.css">
+        <link rel="stylesheet" href="stylesheets/style.css">
+        <!-- <meta name="viewport" content="width=device-width, initial-scale=1.0"> -->
+        <title>Fruits Boxes</title>
+    </head>
+    <body>
+        <div id="app">
+            Score: {{score}}
+            <table>
+                <tr v-for="(row, i) in grid">
+                    <td v-for="(fruit, j) in row">
+                        <fruit-component :src="fruit.src"
+                                         :box="mousePos"
+                                         :deleted="fruit.val == null"
+                                         :key="reloadKey"
+                                         @change="state => updateSelectedState(i, j, state)">{{fruit.val}}</fruit-component>
+                    </td>
+                </tr>
+            </table>
+            <canvas id="selection-box-canvas">
+
+            </canvas>
+        </div>
+    </body>
+    <script src="javascripts/lib/vue.js"></script>
+    <script src="javascripts/class/fruit.js"></script>
+    <script src="javascripts/component/fruit-component.js"></script>
+    <script src="javascripts/init.js"></script>
+    <script src="javascripts/index.js"></script>
+</html>

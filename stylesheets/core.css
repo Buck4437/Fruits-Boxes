@@ -1,0 +1,7 @@
+.disable-select {
+    user-select: none;
+}
+
+.hidden {
+    visibility: hidden;
+}
