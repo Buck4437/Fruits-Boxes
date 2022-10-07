@@ -1,3 +1,4 @@
+<!DOCTYPE html>
 <html lang="en">
     <head>
         <meta charset="UTF-8">
@@ -9,9 +10,9 @@
     </head>
     <body>
         <div id="app">
-            <div class="menu" v-show="!gameOngoing">
+            <div class="menu" v-show="!isGameOngoing">
                 <h1>Fruits Boxes</h1>
-                <i>Inspired by Fruit Box, by GameSaien</i>
+                <h4><i>Inspired by Fruit Box, by GameSaien</i></h4>
                 <table>
                     <tr>
                         <td>Types of fruits:</td>
@@ -54,10 +55,19 @@
                 </table>
                 <button @click="playGame" :disabled="!allInputValid">Play Game</button>
             </div>
-            <div class="game" v-show="gameOngoing">
-                <span class="score">Score: {{score}}</span>
-                <span>Seed: {{gameSeed}}</span>
-                <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
+            <div class="game" v-show="isGameOngoing">
+                <header>
+                    <div class="header-info">
+                        <span>Score: {{score}}</span>
+                        <span>Seed: {{gameSeed}}</span>
+                        <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
+                        <span>Time Remaining: {{timer.toFixed(1)}}s</span>
+                    </div>
+                    <div class="header-functions">
+                        <button v-if="!isGameEnded" @click="timer = 0">Forfeit</button>
+                        <button @click="isGameOngoing = false">Back to Menu</button>
+                    </div>
+                </header>
                 <div class="game-field">
                     <table>
                         <tr v-for="(row, i) in grid">
@@ -73,6 +83,7 @@
                     <canvas id="selection-box-canvas"></canvas>
                 </div>
             </div>
+            <audio id="fruit-song" src="fruitbox.mp3" loop style="display:none"></audio>
         </div>
     </body>
     <script src="javascripts/lib/random.js"></script>

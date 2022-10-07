@@ -4,10 +4,18 @@ body {
     background-color: lightblue;
 }
 
+h4 {
+    font-weight: 300;
+}
+
 .menu {
     display: flex;
     flex-direction: column;
     align-items: center;
+}
+
+.menu table {
+    margin-bottom: 16px;
 }
 
 .menu-options {
@@ -25,12 +33,29 @@ body {
 
 .game-field {
     position: relative;
-
     background-color: lightgreen;
 }
 
-.score {
-    /* placeholder */
+header {
+    display: flex;
+    width: 100%;
+    flex-direction: row;
+    justify-content: space-around;  
+    align-items: flex-end;
+    padding-bottom: 16px;
+}
+
+.header-info, .header-functions {
+    display: flex;
+    flex-direction: column;
+}
+
+.header-functions button {
+    margin: 4px;
+}
+
+.score span {
+    text-shadow: aqua;
 }
 
 

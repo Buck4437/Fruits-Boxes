@@ -12,11 +12,11 @@ const app = new Vue({
             seed: "-1"
         },
         
-        gameOngoing: false,
+        isGameOngoing: false,
         timer: 0,
 
         gameSeed: 0,
-        random: Math.random, //Default
+        random: Math.random, // Default value, not the actual generator used
 
         // Game related
         score: 0,
@@ -27,9 +27,13 @@ const app = new Vue({
             start: [0, 0],
             end: [0, 0]
         },
-        reloadKey: 0
+        reloadKey: 0,
+        currentTick: Date.now()
     },
     computed: {
+        isGameEnded() {
+            return this.isGameOngoing && this.timer <= 0;
+        },
         parsedInputs() {
             let parsed = {}
             for (let key in this.inputs) {
@@ -82,10 +86,28 @@ const app = new Vue({
             this.random = new Math.seedrandom(String(seed));
 
             this.createGrid(this.parsedInputs.rowCount, this.parsedInputs.columnCount);
-            this.gameOngoing = true;
+            this.score = 0;
 
-            await this.$nextTick(); // Wait for the elements to load
+            this.isGameOngoing = true;
+
+            await this.$nextTick(); // Wait for the canvas to load
             rescaleCanvas();
+            this.timer = this.parsedInputs.timeLimit;
+            this.playSong();
+        },
+        stopGame() {
+            this.clearCanvas();
+            this.drawingMode = false;
+            this.stopSong();
+        },
+        playSong() {
+            let el = document.getElementById("fruit-song");
+            el.currentTime = 0;
+            el.play();
+        },
+        stopSong() {
+            let el = document.getElementById("fruit-song");
+            el.pause();
         },
         createFruit(val, type) {
             return new Fruit(val, `fruit${type}.png`, type)
@@ -155,7 +177,7 @@ const app = new Vue({
             return [topPos, leftPos, bottomPos, rightPos];
         },
         handleMouseDown(event) {
-            if (!this.gameOngoing) return;
+            if (!this.isGameOngoing || this.timer <= 0) return;
             const mousePos = getMousePos(event);
             const [top, left, bottom, right] = this.getCanvasCorners();
             if (mousePos[0] < left || mousePos[0] > right || mousePos[1] < top || mousePos[1] > bottom) return;
@@ -165,14 +187,14 @@ const app = new Vue({
             this.mousePos.end = this.mousePos.start
         },
         handleMouseMove(event) {
-            if (!this.gameOngoing) return;
+            if (!this.isGameOngoing || this.timer <= 0) return;
             if (this.drawingMode) {
                 this.mousePos.end = getMousePos(event);
                 this.drawSelectionBox()
             }
         },
         handleMouseUp(event) {
-            if (!this.gameOngoing) return;
+            if (!this.isGameOngoing || this.timer <= 0) return;
             this.drawingMode = false;
             this.mousePos.end = getMousePos(event);
             this.clearCanvas();
@@ -234,6 +256,11 @@ const app = new Vue({
                 }
             },
             deep: true
+        },
+        isGameEnded(bool) {
+            if (bool === true) {
+                this.stopGame();
+            }
         }
     },
     mounted() {
@@ -245,6 +272,11 @@ const app = new Vue({
             this.drawSelectionBox()
             this.forceRerender();
         })
+        setInterval(() => {
+            dt = Date.now() - this.currentTick;
+            this.currentTick += dt;
+            this.timer = Math.max(0, this.timer - dt / 1000);
+        }, 50)
         rescaleCanvas();
     }
 });
