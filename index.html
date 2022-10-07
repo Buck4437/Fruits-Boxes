@@ -9,12 +9,55 @@
     </head>
     <body>
         <div id="app">
-            <!-- <div class="menu">
+            <div class="menu" v-show="!gameOngoing">
                 <h1>Fruits Boxes</h1>
                 <i>Inspired by Fruit Box, by GameSaien</i>
-            </div> -->
-            <div class="game">
+                <table>
+                    <tr>
+                        <td>Types of fruits:</td>
+                        <td>
+                            <select v-model="inputs.fruitTypes" class="menu-options fruit-types">
+                                <option v-for="i in 4">{{i}}</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Number of rows:</td>
+                        <td>
+                            <input class="menu-options row-count" v-model="inputs.rowCount" placeholder="Default: 10">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Number of columns (>=1):</td>
+                        <td>
+                            <input class="menu-options column-count" v-model="inputs.columnCount" placeholder="Default: 17">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Time limit (>=1):</td>
+                        <td>
+                            <input class="menu-options time-limit" v-model="inputs.timeLimit" placeholder="Default: 120">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Target sum (>=10):</td>
+                        <td>
+                            <input class="menu-options target-sum" v-model="inputs.sumRequirement" placeholder="Default: 10">
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Enter seed (Integer, -1 for random):</td>
+                        <td>
+                            <input class="menu-options seed-number" v-model="inputs.seed" placeholder="Default: -1">
+                        </td>
+                    </tr>
+                </table>
+                <button @click="playGame" :disabled="!allInputValid">Play Game</button>
+            </div>
+            <div class="game" v-show="gameOngoing">
                 <span class="score">Score: {{score}}</span>
+                <span>Seed: {{gameSeed}}</span>
+                <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
                 <div class="game-field">
                     <table>
                         <tr v-for="(row, i) in grid">
@@ -32,9 +75,11 @@
             </div>
         </div>
     </body>
+    <script src="javascripts/lib/random.js"></script>
     <script src="javascripts/lib/vue.js"></script>
     <script src="javascripts/class/fruit.js"></script>
     <script src="javascripts/component/fruit-component.js"></script>
+    <script src="javascripts/util.js"></script>
     <script src="javascripts/init.js"></script>
     <script src="javascripts/index.js"></script>
 </html>

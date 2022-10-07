@@ -1,5 +1,4 @@
 html {
-    color: white;
     font-size: 16px;
     font-family: monospace;
 }
@@ -10,4 +9,9 @@ html {
 
 .hidden {
     visibility: hidden;
+}
+
+.error {
+    border: 2px solid red;
+    background-color: #ff000050;
 }

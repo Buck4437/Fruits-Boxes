@@ -4,8 +4,14 @@ body {
     background-color: lightblue;
 }
 
-#app {
-    
+.menu {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.menu-options {
+    display: inline;
 }
 
 .game {
@@ -24,7 +30,7 @@ body {
 }
 
 .score {
-    color: black;
+    /* placeholder */
 }
 
 
@@ -48,6 +54,7 @@ table {
 }
 
 .component.fruit-component .fruit-value {
+    color: white;
     font-weight: bold;
 	position: absolute;
 	z-index: 100;

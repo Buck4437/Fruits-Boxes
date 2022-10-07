@@ -3,10 +3,20 @@ const app = new Vue({
     data: {
 
         // Options
-        fruitTypes: 4,
-        sumRequirement: 10,
-        row: 16,
-        column: 20,
+        inputs: {
+            fruitTypes: "1",
+            rowCount: "10",
+            columnCount: "17",
+            timeLimit: "120", // Not implemented
+            sumRequirement: "10",
+            seed: "-1"
+        },
+        
+        gameOngoing: false,
+        timer: 0,
+
+        gameSeed: 0,
+        random: Math.random, //Default
 
         // Game related
         score: 0,
@@ -17,30 +27,87 @@ const app = new Vue({
             start: [0, 0],
             end: [0, 0]
         },
-        reloadKey: 0,
+        reloadKey: 0
+    },
+    computed: {
+        parsedInputs() {
+            let parsed = {}
+            for (let key in this.inputs) {
+                parsed[key] = parseInt(this.inputs[key])
+            }
+            return parsed;
+        },
+        inputStats() {
+            return [
+                {
+                    class: ".fruit-types",
+                    filter: () => true
+                },
+                {
+                    class: ".row-count",
+                    filter: () => this.inputs.rowCount == "" || (Util.isInteger(this.inputs.rowCount) && parseInt(this.inputs.rowCount) >= 1)
+                },
+                {
+                    class: ".column-count",
+                    filter: () => this.inputs.columnCount == "" || (Util.isInteger(this.inputs.columnCount) && parseInt(this.inputs.columnCount) >= 1),
+                },
+                {
+                    class: ".time-limit",
+                    filter: () => this.inputs.timeLimit == "" || (Util.isInteger(this.inputs.timeLimit) && parseInt(this.inputs.timeLimit) > 0),
+                },
+                {
+                    class: ".target-sum",
+                    filter: () => this.inputs.sumRequirement == "" || (Util.isInteger(this.inputs.sumRequirement) && parseInt(this.inputs.sumRequirement) >= 10)
+                },
+                {
+                    class: ".seed-number",
+                    filter: () => this.inputs.seed == "" || (Util.isInteger(this.inputs.sumRequirement) && parseInt(this.inputs.sumRequirement) >= -1)
+                }
+            ]
+        },
+        allInputValid() {
+            return this.inputStats.every(x => x.filter() === true)
+        }
     },
     methods: {
+        async playGame() {
+            if (!this.allInputValid) return;
+
+            let seed = this.parsedInputs.seed;
+            if (seed == -1) {
+                seed = Math.floor(Math.random() * 1e9);
+            }
+
+            this.gameSeed = seed;
+            this.random = new Math.seedrandom(String(seed));
+
+            this.createGrid(this.parsedInputs.rowCount, this.parsedInputs.columnCount);
+            this.gameOngoing = true;
+
+            await this.$nextTick(); // Wait for the elements to load
+            rescaleCanvas();
+        },
         createFruit(val, type) {
             return new Fruit(val, `fruit${type}.png`, type)
         },
-        generateGrid(row=10, column=10) {
+        createGrid(row=10, column=10) {
             const grid = [];
             for (let i = 0; i < row; i++) {
                 const r = [];
                 for (let j = 0; j < column; j++) {
-                    const type = Math.floor(Math.random() * this.fruitTypes + 1)
+                    const type = Math.floor(this.random() * this.parsedInputs.fruitTypes + 1)
                     let val = 0;
-                    if (Math.random() < 0.3) {
-                        val = Math.floor(Math.random() * 4 + 1);
+                    if (this.random() < 0.3) {
+                        val = Math.floor(this.random() * 4 + 1);
                     } else {
-                        val = Math.floor(Math.random() * 9 + 1);
+                        val = Math.floor(this.random() * 9 + 1);
                     }
                     r.push(this.createFruit(val, type));
                 }
                 grid.push(r);
             }
             this.grid = grid;
-            this.selected = new Set()
+            this.selected = new Set();
         },
         updateSelectedState(i, j, state) {
             if (state === true) {
@@ -70,7 +137,7 @@ const app = new Vue({
                         count += 1;
                     }
                 }
-                if (sum != this.sumRequirement) continue;
+                if (sum != this.parsedInputs.sumRequirement) continue;
                 for (let fruit of fruits[type]) {
                     fruit.val = null;
                 }
@@ -88,6 +155,7 @@ const app = new Vue({
             return [topPos, leftPos, bottomPos, rightPos];
         },
         handleMouseDown(event) {
+            if (!this.gameOngoing) return;
             const mousePos = getMousePos(event);
             const [top, left, bottom, right] = this.getCanvasCorners();
             if (mousePos[0] < left || mousePos[0] > right || mousePos[1] < top || mousePos[1] > bottom) return;
@@ -97,12 +165,14 @@ const app = new Vue({
             this.mousePos.end = this.mousePos.start
         },
         handleMouseMove(event) {
+            if (!this.gameOngoing) return;
             if (this.drawingMode) {
                 this.mousePos.end = getMousePos(event);
                 this.drawSelectionBox()
             }
         },
         handleMouseUp(event) {
+            if (!this.gameOngoing) return;
             this.drawingMode = false;
             this.mousePos.end = getMousePos(event);
             this.clearCanvas();
@@ -150,8 +220,21 @@ const app = new Vue({
             this.reloadKey += 1;
         }
     },
-    created() {
-        this.generateGrid(this.row, this.column);
+    watch: {
+        inputs: {
+            handler() {
+                const stats = this.inputStats;
+                for (let obj of stats) {
+                    const [className, isValid] = [obj.class, obj.filter()]
+                    if (isValid) {
+                        document.querySelector(className).classList.remove("error")
+                    } else {
+                        document.querySelector(className).classList.add("error")
+                    }
+                }
+            },
+            deep: true
+        }
     },
     mounted() {
         document.addEventListener("mousedown", this.handleMouseDown);
