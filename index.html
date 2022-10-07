@@ -65,7 +65,7 @@
                     </div>
                     <div class="header-functions">
                         <button v-if="!isGameEnded" @click="timer = 0">Forfeit</button>
-                        <button @click="isGameOngoing = false">Back to Menu</button>
+                        <button @click="() => {stopGame(); isGameOngoing = false}">Back to Menu</button>
                     </div>
                 </header>
                 <div class="game-field">
