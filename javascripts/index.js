@@ -5,8 +5,8 @@ const app = new Vue({
         // Options
         fruitTypes: 4,
         sumRequirement: 10,
-        row: 40,
-        column: 1,
+        row: 16,
+        column: 20,
 
         // Game related
         score: 0,
@@ -49,24 +49,6 @@ const app = new Vue({
                 this.selected.delete(i + "," + j)
             }
         },
-        handleMouseDown(event) {
-            this.drawingMode = true;
-            this.mousePos.start = getMousePos(event);
-            this.mousePos.end = this.mousePos.start
-        },
-        handleMouseMove(event) {
-            if (this.drawingMode) {
-                this.mousePos.end = getMousePos(event);
-                this.drawSelectionBox()
-            }
-        },
-        handleMouseUp(event) {
-            this.drawingMode = false;
-            this.mousePos.end = getMousePos(event);
-            this.clearCanvas();
-            this.deleteFruit()
-            this.mousePos.start = this.mousePos.end;
-        },
         deleteFruit() {
             const fruits = {};
             for (let pair of this.selected.values()) {
@@ -97,6 +79,36 @@ const app = new Vue({
             }
             this.score += cumulative * combo;
         },
+        getCanvasCorners() {
+            const canvas = document.querySelector("#selection-box-canvas")
+            const topPos = canvas.getBoundingClientRect().top + window.scrollY;
+            const leftPos = canvas.getBoundingClientRect().left + window.scrollX;
+            const bottomPos = canvas.getBoundingClientRect().bottom + window.scrollY;
+            const rightPos = canvas.getBoundingClientRect().right + window.scrollX;
+            return [topPos, leftPos, bottomPos, rightPos];
+        },
+        handleMouseDown(event) {
+            const mousePos = getMousePos(event);
+            const [top, left, bottom, right] = this.getCanvasCorners();
+            if (mousePos[0] < left || mousePos[0] > right || mousePos[1] < top || mousePos[1] > bottom) return;
+            
+            this.drawingMode = true;
+            this.mousePos.start = mousePos;
+            this.mousePos.end = this.mousePos.start
+        },
+        handleMouseMove(event) {
+            if (this.drawingMode) {
+                this.mousePos.end = getMousePos(event);
+                this.drawSelectionBox()
+            }
+        },
+        handleMouseUp(event) {
+            this.drawingMode = false;
+            this.mousePos.end = getMousePos(event);
+            this.clearCanvas();
+            this.deleteFruit()
+            this.mousePos.start = this.mousePos.end;
+        },
         drawSelectionBox() {
             if (!this.drawingMode) return;
             const canvas = document.querySelector("#selection-box-canvas")
@@ -117,8 +129,16 @@ const app = new Vue({
             // Draws selection box
             context.fillStyle = "rgb(160, 160, 160, 0.15)";
             
-            context.clearRect(xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase, xEnd-xStart, yEnd-yStart);
-            context.fillRect(xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase, xEnd-xStart, yEnd-yStart);
+            let limit = (min, x, max) => Math.max(Math.min(x, max), min)
+            const [xMax, yMax] = [canvas.width, canvas.height];
+            
+            const [xStart2, yStart2] = [xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase]
+            const [xShift, yShift] = [
+                limit(-xStart2+2, xEnd-xStart, xMax-xStart2-2),
+                limit(-yStart2+2, yEnd-yStart, yMax-yStart2-2)
+            ];
+            context.clearRect(xStart2, yStart2, xShift, yShift);
+            context.fillRect(xStart2, yStart2, xShift, yShift);
         },
         clearCanvas() {
             const canvas = document.querySelector("#selection-box-canvas")

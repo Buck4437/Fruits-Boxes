@@ -1,7 +1,7 @@
 body {
     margin: 0px;
     padding: 0px;
-    background-color: lightgreen;
+    background-color: lightblue;
 }
 
 #app {
@@ -9,8 +9,8 @@ body {
 }
 
 .game {
-    /* width: 100vw;
-    height: 100vh; */
+    width: 100vw;
+    height: 100vh;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -19,6 +19,8 @@ body {
 
 .game-field {
     position: relative;
+
+    background-color: lightgreen;
 }
 
 .score {
@@ -34,7 +36,6 @@ table {
     position: absolute;
     top: 0;
     z-index: 200;
-    background-color: #1f1e3330;
 }
 
 .component.fruit-component {
