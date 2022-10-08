@@ -6,6 +6,7 @@ body {
 
 h4 {
     font-weight: 300;
+    margin-top: 0;
 }
 
 .menu {
@@ -69,6 +70,10 @@ table {
     z-index: 200;
 }
 
+.timer {
+    background-color: green;
+}
+
 .component.fruit-component {
     position: relative;
 }
@@ -86,4 +91,14 @@ table {
 	top: 50%;
 	left: 50%;
 	transform: translate(-50%, -50%);
+}
+
+.component.progress-bar {
+    padding: 4px;
+}
+
+.component.progress-bar .progress-bar-canvas {
+    width: 100%;
+    height: 12px;
+    background-color: white;
 }

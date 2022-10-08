@@ -31,6 +31,9 @@ const app = new Vue({
         currentTick: Date.now()
     },
     computed: {
+        timerProgress() {
+            return  (this.timer / this.parsedInputs.timeLimit) ?? 0
+        },
         isGameEnded() {
             return this.isGameOngoing && this.timer <= 0;
         },
@@ -92,6 +95,7 @@ const app = new Vue({
 
             await this.$nextTick(); // Wait for the canvas to load
             rescaleCanvas();
+            this.forceRerender();
             this.timer = this.parsedInputs.timeLimit;
             this.playSong();
         },
@@ -237,7 +241,7 @@ const app = new Vue({
             const context = canvas.getContext("2d");
             context.clearRect(0, 0, canvas.width, canvas.height);
         },
-        // This is used when resizing the window, as the position value will change
+        // This is used when resizing the window and the canvas, as the position value will change
         forceRerender() { 
             this.reloadKey += 1;
         }
