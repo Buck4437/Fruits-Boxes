@@ -34,12 +34,19 @@ const app = new Vue({
         // Game related
         score: 0,
         grid: [],
-        selected: new Set(),
+        selected: [],
         drawingMode: false,
         mousePos: {
             start: [0, 0],
             end: [0, 0]
         },
+
+        audios: {
+            bgm: new Audio("res/fruitbox.mp3"),
+            delete: new Audio("res/delete.mp3"),
+            end: new Audio("res/end.mp3")
+        },
+
         reloadKey: 0,
         currentTick: Date.now()
     },
@@ -90,6 +97,31 @@ const app = new Vue({
         },
         allInputValid() {
             return this.inputStats.every(x => x.filter() === true)
+        },
+        removableFruits() {
+            const fruits = {};
+            const removableFruits = [];
+            for (let pair of this.selected) {
+                let [i, j] = pair.split(",");
+                const fruit = this.grid[i][j];
+                if (fruit.type in fruits) {
+                    fruits[fruit.type].push(fruit);
+                } else {
+                    fruits[fruit.type] = [fruit];
+                }
+            }
+            for (let type in fruits) {
+                let sum = 0;
+                for (let fruit of fruits[type]) {
+                    const val = fruit.val;
+                    if (val != null) {
+                        sum += val;
+                    }
+                }
+                if (sum != this.parsedInputs.sumRequirement) continue;
+                removableFruits.push(fruits[type]) // Add the fruit list to the array
+            }
+            return removableFruits;
         }
     },
     methods: {
@@ -107,27 +139,31 @@ const app = new Vue({
             this.createGrid(this.parsedInputs.rowCount, this.parsedInputs.columnCount);
             this.score = 0;
 
+            this.timer = this.parsedInputs.timeLimit;
             this.isGameOngoing = true;
 
             await this.$nextTick(); // Wait for the canvas to load
             rescaleCanvas();
             this.forceRerender();
-            this.timer = this.parsedInputs.timeLimit;
-            this.playSong();
+            this.playSound("bgm", {loop: true});
         },
         stopGame() {
             this.clearCanvas();
             this.drawingMode = false;
-            this.stopSong();
+            this.stopSound("bgm");
         },
-        playSong() {
-            let el = document.getElementById("fruit-song");
-            el.currentTime = 0;
-            el.play();
+        playSound(key, attr) {
+            this.stopSound(key);
+            const audio = this.audios[key];
+            for (let key in attr) {
+                audio[key] = attr[key];
+            }
+            this.audios[key].play();
         },
-        stopSong() {
-            let el = document.getElementById("fruit-song");
-            el.pause();
+        stopSound(key) {
+            const audio = this.audios[key];
+            audio.pause();
+            audio.currentTime = 0;
         },
         createFruit(val, type) {
             return new Fruit(val, `fruit${type}.png`, type)
@@ -149,42 +185,33 @@ const app = new Vue({
                 grid.push(r);
             }
             this.grid = grid;
-            this.selected = new Set();
+            this.selected = [];
         },
         updateSelectedState(i, j, state) {
+            const key = i + "," + j
             if (state === true) {
-                this.selected.add(i + "," + j)
+                if (this.selected.indexOf(key) == -1) {
+                    this.selected.push(i + "," + j)
+                }
             } else {
-                this.selected.delete(i + "," + j)
+                const index = this.selected.indexOf(key);
+                if (this.index != -1) {
+                    this.selected.splice(index, 1)
+                }
             }
         },
         deleteFruit() {
-            const fruits = {};
-            for (let pair of this.selected.values()) {
-                let [i, j] = pair.split(",");
-                const fruit = this.grid[i][j];
-                if (fruit.type in fruits) {
-                    fruits[fruit.type].push(fruit);
-                } else {
-                    fruits[fruit.type] = [fruit];
-                }
-            }
+            const removableFruits = this.removableFruits;
             let cumulative = 0, combo = 0;
-            for (let type in fruits) {
-                let sum = 0, count = 0;
-                for (let fruit of fruits[type]) {
-                    const val = fruit.val;
-                    if (val != null) {
-                        sum += val;
-                        count += 1;
-                    }
-                }
-                if (sum != this.parsedInputs.sumRequirement) continue;
-                for (let fruit of fruits[type]) {
+            for (let fruits of removableFruits) {
+                for (let fruit of fruits) {
                     fruit.val = null;
                 }
-                cumulative += count;
+                cumulative += fruits.length;
                 combo += 1;
+            }
+            if (cumulative > 0) {
+                this.playSound("delete");
             }
             this.score += cumulative * (this.parsedInputs.comboScoring ? combo : 1);
         },
@@ -235,19 +262,20 @@ const app = new Vue({
             const [xSgn, ySgn] = [xEnd > xStart ? 1 : -1, yEnd > yStart ? 1 : -1]
 
             // Draws border
+            const borderWidth = 1;
             context.fillStyle = "#aaaaaa";
-            context.fillRect(xStart - xBase, yStart - yBase, xEnd-xStart + 4 * xSgn, yEnd-yStart + 4 * ySgn);
+            context.fillRect(xStart - xBase, yStart - yBase, xEnd-xStart + 2 * borderWidth * xSgn, yEnd-yStart + 2 * borderWidth * ySgn);
 
             // Draws selection box
-            context.fillStyle = "rgb(160, 160, 160, 0.15)";
+            context.fillStyle = this.removableFruits.length > 0 ? "rgb(0, 160, 160, 0.3)" : "rgb(160, 0, 0, 0.15)";
             
             let limit = (min, x, max) => Math.max(Math.min(x, max), min)
             const [xMax, yMax] = [canvas.width, canvas.height];
             
-            const [xStart2, yStart2] = [xStart + 2 * xSgn - xBase, yStart + 2 * ySgn - yBase]
+            const [xStart2, yStart2] = [xStart + borderWidth * xSgn - xBase, yStart + borderWidth * ySgn - yBase]
             const [xShift, yShift] = [
-                limit(-xStart2+2, xEnd-xStart, xMax-xStart2-2),
-                limit(-yStart2+2, yEnd-yStart, yMax-yStart2-2)
+                limit(-xStart2+borderWidth, xEnd-xStart, xMax-xStart2-borderWidth),
+                limit(-yStart2+borderWidth, yEnd-yStart, yMax-yStart2-borderWidth)
             ];
             context.clearRect(xStart2, yStart2, xShift, yShift);
             context.fillRect(xStart2, yStart2, xShift, yShift);
@@ -279,7 +307,8 @@ const app = new Vue({
         },
         isGameEnded(bool) {
             if (bool === true) {
-                this.stopGame();
+                this.stopGame();            
+                this.playSound("end");
             }
         }
     },
