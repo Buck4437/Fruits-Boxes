@@ -19,7 +19,6 @@ Vue.component("progress-bar", {
     },
     watch: {
         progress() {
-
             this.updateCanvas();
         }
     },

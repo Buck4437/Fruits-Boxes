@@ -3,13 +3,26 @@ const app = new Vue({
     data: {
 
         // Options
+        defaultInputs: {
+            fruitTypes: 1,
+            rowCount: 10,
+            columnCount: 17,
+            timeLimit: 120,
+            sumRequirement: 10,
+            seed: -1,
+            comboScoring: true,
+            weightedNumber: true
+        },
+
         inputs: {
             fruitTypes: "1",
-            rowCount: "10",
-            columnCount: "17",
-            timeLimit: "120", // Not implemented
-            sumRequirement: "10",
-            seed: "-1"
+            rowCount: "",
+            columnCount: "",
+            timeLimit: "",
+            sumRequirement: "",
+            seed: "",
+            comboScoring: true,
+            weightedNumber: true
         },
         
         isGameOngoing: false,
@@ -40,16 +53,19 @@ const app = new Vue({
         parsedInputs() {
             let parsed = {}
             for (let key in this.inputs) {
-                parsed[key] = parseInt(this.inputs[key])
+                const input = this.inputs[key];
+                if (typeof input === "string" && input.trim() === "") {
+                    parsed[key] = this.defaultInputs[key];
+                } else if (["comboScoring", "weightedNumber"].indexOf(key) != -1) {
+                    parsed[key] = this.inputs[key];
+                } else {
+                    parsed[key] = parseInt(this.inputs[key]);
+                }
             }
             return parsed;
         },
         inputStats() {
             return [
-                {
-                    class: ".fruit-types",
-                    filter: () => true
-                },
                 {
                     class: ".row-count",
                     filter: () => this.inputs.rowCount == "" || (Util.isInteger(this.inputs.rowCount) && parseInt(this.inputs.rowCount) >= 1)
@@ -68,7 +84,7 @@ const app = new Vue({
                 },
                 {
                     class: ".seed-number",
-                    filter: () => this.inputs.seed == "" || (Util.isInteger(this.inputs.sumRequirement) && parseInt(this.inputs.sumRequirement) >= -1)
+                    filter: () => this.inputs.seed == "" || (Util.isInteger(this.inputs.seed) && parseInt(this.inputs.seed) >= -1)
                 }
             ]
         },
@@ -123,7 +139,7 @@ const app = new Vue({
                 for (let j = 0; j < column; j++) {
                     const type = Math.floor(this.random() * this.parsedInputs.fruitTypes + 1)
                     let val = 0;
-                    if (this.random() < 0.3) {
+                    if (this.random() < (this.parsedInputs.weightedNumber ? 0.3 : 0)) {
                         val = Math.floor(this.random() * 4 + 1);
                     } else {
                         val = Math.floor(this.random() * 9 + 1);
@@ -170,7 +186,7 @@ const app = new Vue({
                 cumulative += count;
                 combo += 1;
             }
-            this.score += cumulative * combo;
+            this.score += cumulative * (this.parsedInputs.comboScoring ? combo : 1);
         },
         getCanvasCorners() {
             const canvas = document.querySelector("#selection-box-canvas")
@@ -282,6 +298,8 @@ const app = new Vue({
             this.timer = Math.max(0, this.timer - dt / 1000);
         }, 50)
         rescaleCanvas();
+        
+        document.querySelector(".loading-text").innerHTML = "";
     }
 });
 

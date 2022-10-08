@@ -10,7 +10,8 @@
     </head>
     <body>
         <div id="app">
-            <div class="menu" v-show="!isGameOngoing">
+            <div class="menu" v-show="!isGameOngoing">            
+                <h1 class="loading-text">Loading...</h1>
                 <h1>Fruits Boxes</h1>
                 <h4><i>Inspired by Fruit Box, by GameSaien</i></h4>
                 <table>
@@ -52,6 +53,18 @@
                             <input class="menu-options seed-number" v-model="inputs.seed" placeholder="Default: -1">
                         </td>
                     </tr>
+                    <tr>
+                        <td>Bonus for clearing multiple fruit types:</td>
+                        <td>
+                            <input class="menu-options combo-scoring" v-model="inputs.comboScoring" type="checkbox"></input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>Weighted distribution of number (More 1-4s):</td>
+                        <td>
+                            <input class="menu-options weighted-number" v-model="inputs.weightedNumber" type="checkbox"></input>
+                        </td>
+                    </tr>
                 </table>
                 <button @click="playGame" :disabled="!allInputValid">Play Game</button>
             </div>
@@ -61,6 +74,8 @@
                         <span>Score: {{score}}</span>
                         <span>Seed: {{gameSeed}}</span>
                         <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
+                        <span>Combo Scoring {{parsedInputs.comboScoring ? "On" : "Off"}},
+                              {{parsedInputs.weightedNumber ? "Weighted" : "Unweighted"}}</span>
                         <span>Time Remaining: {{timer.toFixed(1)}} / {{parsedInputs.timeLimit.toFixed(1)}}s</span>
                     </div>
                     <div class="header-functions">
