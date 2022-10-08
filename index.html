@@ -65,6 +65,24 @@
                             <input class="menu-options weighted-number" v-model="inputs.weightedNumber" type="checkbox"></input>
                         </td>
                     </tr>
+                    <tr>
+                        <td>Special highlight for valid moves:</td>
+                        <td>
+                            <input class="menu-options highlight-help" v-model="inputs.highlightHelp" type="checkbox"></input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>BGM:</td>
+                        <td>
+                            <input class="menu-options bgm" v-model="inputs.bgm" type="checkbox"></input>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>SFX:</td>
+                        <td>
+                            <input class="menu-options sfx" v-model="inputs.sfx" type="checkbox"></input>
+                        </td>
+                    </tr>
                 </table>
                 <button @click="playGame" :disabled="!allInputValid">Play Game</button>
             </div>
@@ -75,7 +93,8 @@
                         <span>Seed: {{gameSeed}}</span>
                         <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
                         <span>Combo Scoring {{parsedInputs.comboScoring ? "On" : "Off"}},
-                              {{parsedInputs.weightedNumber ? "Weighted" : "Unweighted"}}</span>
+                              {{parsedInputs.weightedNumber ? "Weighted" : "Unweighted"}},
+                              Sum highlighting {{parsedInputs.highlightHelp ? "On" : "Off"}}</span>
                         <span>Time Remaining: {{timer.toFixed(1)}} / {{parsedInputs.timeLimit.toFixed(1)}}s</span>
                     </div>
                     <div class="header-functions">

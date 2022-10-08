@@ -11,7 +11,10 @@ const app = new Vue({
             sumRequirement: 10,
             seed: -1,
             comboScoring: true,
-            weightedNumber: true
+            weightedNumber: true,
+            highlightHelp: false,
+            bgm: true,
+            sfx: true
         },
 
         inputs: {
@@ -22,7 +25,10 @@ const app = new Vue({
             sumRequirement: "",
             seed: "",
             comboScoring: true,
-            weightedNumber: true
+            weightedNumber: true,
+            highlightHelp: false,
+            bgm: true,
+            sfx: true
         },
         
         isGameOngoing: false,
@@ -42,9 +48,18 @@ const app = new Vue({
         },
 
         audios: {
-            bgm: new Audio("res/fruitbox.mp3"),
-            delete: new Audio("res/delete.mp3"),
-            end: new Audio("res/end.mp3")
+            bgm: {
+                type: "bgm",
+                object: new Audio("res/fruitbox.mp3"),
+            },
+            delete: {
+                type: "sfx",
+                object: new Audio("res/delete.mp3") 
+            },
+            end: {
+                type: "sfx",
+                object: new Audio("res/end.mp3")
+            }
         },
 
         reloadKey: 0,
@@ -63,7 +78,7 @@ const app = new Vue({
                 const input = this.inputs[key];
                 if (typeof input === "string" && input.trim() === "") {
                     parsed[key] = this.defaultInputs[key];
-                } else if (["comboScoring", "weightedNumber"].indexOf(key) != -1) {
+                } else if (["comboScoring", "weightedNumber", "highlightHelp", "bgm", "sfx"].indexOf(key) != -1) {
                     parsed[key] = this.inputs[key];
                 } else {
                     parsed[key] = parseInt(this.inputs[key]);
@@ -154,14 +169,16 @@ const app = new Vue({
         },
         playSound(key, attr) {
             this.stopSound(key);
-            const audio = this.audios[key];
-            for (let key in attr) {
-                audio[key] = attr[key];
+            const [audio, type] = [this.audios[key].object, this.audios[key].type];
+            if (type == "bgm" && this.parsedInputs.bgm == false) return
+            if (type == "sfx" && this.parsedInputs.sfx == false) return
+            for (let ky in attr) {
+                audio[ky] = attr[ky];
             }
-            this.audios[key].play();
+            audio.play();
         },
         stopSound(key) {
-            const audio = this.audios[key];
+            const audio = this.audios[key].object;
             audio.pause();
             audio.currentTime = 0;
         },
@@ -267,7 +284,11 @@ const app = new Vue({
             context.fillRect(xStart - xBase, yStart - yBase, xEnd-xStart + 2 * borderWidth * xSgn, yEnd-yStart + 2 * borderWidth * ySgn);
 
             // Draws selection box
-            context.fillStyle = this.removableFruits.length > 0 ? "rgb(0, 160, 160, 0.3)" : "rgb(160, 0, 0, 0.15)";
+            if (this.parsedInputs.highlightHelp) {
+                context.fillStyle = this.removableFruits.length > 0 ? "rgb(0, 160, 160, 0.3)" : "rgb(160, 0, 0, 0.15)";
+            } else {
+                context.fillStyle = "rgb(160, 160, 160, 0.15)";
+            }
             
             let limit = (min, x, max) => Math.max(Math.min(x, max), min)
             const [xMax, yMax] = [canvas.width, canvas.height];
