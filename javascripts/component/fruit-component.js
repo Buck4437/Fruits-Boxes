@@ -1,8 +1,7 @@
 Vue.component("fruit-component", {
     props: {
-        src: String,
-        deleted: Boolean,
-        box: Object,
+        fruit: Fruit,
+        selectBoxPos: Object,
         getState: Boolean
     },
     data() {
@@ -12,9 +11,9 @@ Vue.component("fruit-component", {
     },
     computed: {
         selected() {
-            if (this.deleted) return false;
+            if (this.fruit.isDeleted()) return false;
 
-            const [start, end] = [this.box.start, this.box.end];
+            const [start, end] = [this.selectBoxPos.start, this.selectBoxPos.end];
             if (start[0] == end[0] && start[1] == end[1]) {
                 return false
             }
@@ -26,9 +25,9 @@ Vue.component("fruit-component", {
         },
         path() {
             if (this.selected) {
-                return "img/selected_" + this.src;
+                return "img/selected_" + this.fruit.src;
             }
-            return "img/" + this.src;
+            return "img/" + this.fruit.src;
         }
     },
     watch: {
@@ -41,7 +40,7 @@ Vue.component("fruit-component", {
         this.avgPos = [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2]
     },
     template:
-    `<div class="component fruit-component disable-select" :class="{'hidden': deleted}">
+    `<div class="component fruit-component disable-select" :class="{'hidden': fruit.isDeleted()}">
         <img :src="path" draggable="false">
         <div class="fruit-value">
             <slot>0</slot>

@@ -84,47 +84,23 @@
                         </td>
                     </tr>
                 </table>
-                <button @click="playGame" :disabled="!allInputValid">Play Game</button>
+                <button @click="startGame" :disabled="!allInputValid">Play Game</button>
             </div>
-            <div class="game" v-show="isGameOngoing">
-                <header>
-                    <div class="header-info">
-                        <span>Score: {{score}}</span>
-                        <span>Seed: {{gameSeed}}</span>
-                        <span>Target Sum: {{parsedInputs.sumRequirement}}</span>
-                        <span>Combo Scoring {{parsedInputs.comboScoring ? "On" : "Off"}},
-                              {{parsedInputs.weightedNumber ? "Weighted" : "Unweighted"}},
-                              Sum highlighting {{parsedInputs.highlightHelp ? "On" : "Off"}}</span>
-                        <span>Time Remaining: {{timer.toFixed(1)}} / {{parsedInputs.timeLimit.toFixed(1)}}s</span>
-                    </div>
-                    <div class="header-functions">
-                        <button v-if="!isGameEnded" @click="timer = 0">Forfeit</button>
-                        <button @click="() => {stopGame(); isGameOngoing = false}">Back to Menu</button>
-                    </div>
-                </header>
-                <div class="game-field">
-                    <progress-bar :progress="timerProgress" class="timer"></progress-bar>
-                    <table>
-                        <tr v-for="(row, i) in grid">
-                            <td v-for="(fruit, j) in row">
-                                <fruit-component :src="fruit.src"
-                                                :box="mousePos"
-                                                :deleted="fruit.val == null"
-                                                :key="reloadKey"
-                                                @change="state => updateSelectedState(i, j, state)">{{fruit.val}}</fruit-component>
-                            </td>
-                        </tr>
-                    </table>
-                    <canvas id="selection-box-canvas"></canvas>
-                </div>
-            </div>
+            <game-component v-show="isGameOngoing"
+                            :settings="parsedInputs" 
+                            :start-trigger="startGameTrigger"
+                            @quit="exitGame"></game-component>
         </div>
     </body>
     <script src="javascripts/lib/random.js"></script>
-    <script src="javascripts/lib/vue.min.js"></script>
+    <script src="javascripts/lib/vue.js"></script>
     <script src="javascripts/class/Fruit.js"></script>
+    <script src="javascripts/class/AudioLibrary.js"></script>
+
     <script src="javascripts/component/progress-bar.js"></script>
     <script src="javascripts/component/fruit-component.js"></script>
+    <script src="javascripts/component/selection-box-canvas.js"></script>
+    <script src="javascripts/component/game-component.js"></script>
     <script src="javascripts/util.js"></script>
     <script src="javascripts/init.js"></script>
     <script src="javascripts/index.js"></script>
