@@ -108,7 +108,6 @@ const app = new Vue({
         }
     },
     mounted() {
-        rescaleCanvas();
         document.querySelector(".loading-text").innerHTML = "";
     }
 });

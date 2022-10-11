@@ -38,7 +38,6 @@ Vue.component("game-component", {
                     sortedFruits[fruit.type] = [fruit];
                 }
             }
-
             const sumReducer = (sum, fruit) => sum + fruit.getValue();
             return Object.values(sortedFruits).filter(
                 fruits => fruits.reduce(sumReducer, 0) == target
@@ -62,13 +61,11 @@ Vue.component("game-component", {
 
             this.timer = this.settings.timeLimit;
 
-            
             document.addEventListener("mousedown", this.handleMouseDown);
             document.addEventListener("mousemove", this.handleMouseMove);
             document.addEventListener("mouseup", this.handleMouseUp); 
 
             await this.$nextTick(); // Wait for the canvas to load
-            rescaleCanvas();
             this.forceRerender();
             this.playSound("bgm", {loop: true});
             this.isGameOngoing = true;
@@ -101,7 +98,7 @@ Vue.component("game-component", {
             document.removeEventListener("mousemove", this.handleMouseMove);
             document.removeEventListener("mouseup", this.handleMouseUp); 
 
-            this.clearCanvas();
+            this.resetMousePos();
             this.drawingMode = false;
             this.stopSound("bgm");
         },
@@ -147,78 +144,47 @@ Vue.component("game-component", {
             AudioLibrary.stop(name);
         },
         getCanvasCorners() {
-            const canvas = document.querySelector("#selection-box-canvas")
+            const canvas = this.$el.querySelector(".selection-box-canvas")
             const topPos = canvas.getBoundingClientRect().top + window.scrollY;
             const leftPos = canvas.getBoundingClientRect().left + window.scrollX;
             const bottomPos = canvas.getBoundingClientRect().bottom + window.scrollY;
             const rightPos = canvas.getBoundingClientRect().right + window.scrollX;
             return [topPos, leftPos, bottomPos, rightPos];
         },
+        mousePosWithinBound(mousePos) {
+            const [top, left, bottom, right] = this.getCanvasCorners();
+            return left <= mousePos[0] && mousePos[0] <= right && top <= mousePos[1] && mousePos[1] <= bottom
+        },
         handleMouseDown(event) {
             const mousePos = getMousePos(event);
-            const [top, left, bottom, right] = this.getCanvasCorners();
-            if (mousePos[0] < left || mousePos[0] > right || mousePos[1] < top || mousePos[1] > bottom) return;
-            
+            if (!this.mousePosWithinBound(mousePos)) return;
             this.drawingMode = true;
-            this.mousePos.start = mousePos;
-            this.mousePos.end = this.mousePos.start
+            this.mousePos.end = this.mousePos.start = mousePos;
         },
         handleMouseMove(event) {
             if (this.drawingMode) {
                 this.mousePos.end = getMousePos(event);
-                this.drawSelectionBox()
             }
         },
-        handleMouseUp(event) {
+        handleMouseUp() {
             this.drawingMode = false;
-            this.mousePos.end = getMousePos(event);
-            this.clearCanvas();
-            this.deleteFruit()
+            this.resetMousePos();
+            this.deleteFruit();
+        },
+        moveMousePosWithinBound() {
+            const oldMousePos = this.mousePos.start;
+            const [top, left, bottom, right] = this.getCanvasCorners();
+            this.mousePos.start = [
+                Util.limit(left+2, oldMousePos[0], right-2),
+                Util.limit(top+2, oldMousePos[1], bottom-2)
+            ]
+        },
+        resetMousePos() {
+            this.mousePos.end = [0, 0];
             this.mousePos.start = this.mousePos.end;
         },
-        drawSelectionBox() {
-            if (!this.drawingMode) return;
-            const canvas = this.$el.querySelector("#selection-box-canvas")
-            const context = canvas.getContext('2d');
-            this.clearCanvas()
-
-            const viewportOffset = canvas.getBoundingClientRect();
-            const [xBase, yBase] = [viewportOffset.left, viewportOffset.top];
-            const [xStart, yStart] = this.mousePos.start;
-            const [xEnd, yEnd] = this.mousePos.end;
-
-            const [xSgn, ySgn] = [xEnd > xStart ? 1 : -1, yEnd > yStart ? 1 : -1]
-
-            // Draws border
-            const borderWidth = 1;
-            context.fillStyle = "#aaaaaa";
-            context.fillRect(xStart - xBase, yStart - yBase, xEnd-xStart + 2 * borderWidth * xSgn, yEnd-yStart + 2 * borderWidth * ySgn);
-
-            // Draws selection box
-            if (this.settings.highlightHelp) {
-                context.fillStyle = this.removableFruits.length > 0 ? "rgb(0, 160, 160, 0.3)" : "rgb(160, 0, 0, 0.15)";
-            } else {
-                context.fillStyle = "rgb(160, 160, 160, 0.15)";
-            }
-            
-            let limit = (min, x, max) => Math.max(Math.min(x, max), min)
-            const [xMax, yMax] = [canvas.width, canvas.height];
-            
-            const [xStart2, yStart2] = [xStart + borderWidth * xSgn - xBase, yStart + borderWidth * ySgn - yBase]
-            const [xShift, yShift] = [
-                limit(-xStart2+borderWidth, xEnd-xStart, xMax-xStart2-borderWidth),
-                limit(-yStart2+borderWidth, yEnd-yStart, yMax-yStart2-borderWidth)
-            ];
-            context.clearRect(xStart2, yStart2, xShift, yShift);
-            context.fillRect(xStart2, yStart2, xShift, yShift);
-        },
-        clearCanvas() {
-            const canvas = this.$el.querySelector("#selection-box-canvas")
-            const context = canvas.getContext("2d");
-            context.clearRect(0, 0, canvas.width, canvas.height);
-        },
-        // This is used when resizing the window and the canvas, as the position value will change
-        forceRerender() { 
+        // Relaods canvas and fruit positions
+        forceRerender() {
             this.reloadKey += 1;
         }
     },
@@ -228,10 +194,10 @@ Vue.component("game-component", {
         }
     },
     mounted() {
+        this.forceRerender();
         window.addEventListener("resize", () => {
-            rescaleCanvas();
-            this.drawSelectionBox()
             this.forceRerender();
+            this.moveMousePosWithinBound();
         })
         setInterval(() => {
             dt = Date.now() - this.currentTick;
@@ -241,8 +207,7 @@ Vue.component("game-component", {
                 this.stopGame();            
                 this.playSound("end");
             }
-        }, 50)
-        rescaleCanvas();
+        }, 50);
     },
     template:
     `
@@ -268,13 +233,15 @@ Vue.component("game-component", {
             <tr v-for="(row, i) in grid">
                 <td v-for="(fruit, j) in row">
                     <fruit-component :fruit="fruit" 
-                                    :selectBoxPos="mousePos"
-                                    :key="reloadKey"
-                                    @change="state => updateSelectedState(i, j, state)">{{fruit.getValue()}}</fruit-component>
+                                     :selectBoxPos="mousePos"
+                                     :key="reloadKey"
+                                     @change="state => updateSelectedState(i, j, state)">
+                        {{fruit.getValue()}}
+                    </fruit-component>
                 </td>
             </tr>
         </table>
-        <canvas id="selection-box-canvas"></canvas>
+        <selection-box-canvas :mouse-pos="mousePos" :key="reloadKey"/>
     </div>
 </div>`
 })
