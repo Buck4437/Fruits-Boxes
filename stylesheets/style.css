@@ -1,7 +1,11 @@
 body {
-    margin: 0px;
+    margin: 8px;
     padding: 0px;
     background-color: lightblue;
+}
+
+h1 {
+    margin-top: 0;
 }
 
 h4 {
@@ -24,8 +28,8 @@ h4 {
 }
 
 .game {
-    width: 100vw;
-    height: 100vh;
+    min-width: calc(100vw - 16px);
+    min-height: calc(100vh - 16px);
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -33,6 +37,7 @@ h4 {
 }
 
 .game-field {
+    display: inline-block;
     position: relative;
     background-color: lightgreen;
 }
@@ -54,11 +59,6 @@ header {
 .header-functions button {
     margin: 4px;
 }
-
-.score span {
-    text-shadow: red;
-}
-
 
 table {
     margin: 0 auto;

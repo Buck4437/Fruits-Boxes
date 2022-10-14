@@ -86,7 +86,7 @@ Vue.component("selection-box-canvas", {
         this.drawSelectionBox();
     },
     template:
-    `<div>
+    `<div class="selection-box-canvas-container">
         <canvas class="selection-box-canvas"></canvas>
     </div>`
 })

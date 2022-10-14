@@ -56,14 +56,17 @@ Vue.component("game-component", {
 
             this.gameSeed = seed;
             this.random = new Math.seedrandom(String(seed));
-
+            
             this.grid = this.createGrid();
-
             this.timer = this.settings.timeLimit;
 
-            document.addEventListener("mousedown", this.handleMouseDown);
-            document.addEventListener("mousemove", this.handleMouseMove);
-            document.addEventListener("mouseup", this.handleMouseUp); 
+            document.addEventListener("mousedown", this.handleClickDown);
+            document.addEventListener("mousemove", this.handleClickMove);
+            document.addEventListener("mouseup", this.handleClickEnd); 
+
+            document.addEventListener("touchstart", this.handleClickDown);
+            document.addEventListener("touchmove", this.handleClickMove);
+            document.addEventListener("touchend", this.handleClickEnd); 
 
             await this.$nextTick(); // Wait for the canvas to load
             this.forceRerender();
@@ -94,9 +97,13 @@ Vue.component("game-component", {
         },
         stopGame() {
             this.isGameOngoing = false;
-            document.removeEventListener("mousedown", this.handleMouseDown);
-            document.removeEventListener("mousemove", this.handleMouseMove);
-            document.removeEventListener("mouseup", this.handleMouseUp); 
+            document.removeEventListener("mousedown", this.handleClickDown);
+            document.removeEventListener("mousemove", this.handleClickMove);
+            document.removeEventListener("mouseup", this.handleClickEnd); 
+
+            document.removeEventListener("touchstart", this.handleClickDown);
+            document.removeEventListener("touchmove", this.handleClickMove);
+            document.removeEventListener("touchend", this.handleClickEnd);
 
             this.resetMousePos();
             this.drawingMode = false;
@@ -155,18 +162,18 @@ Vue.component("game-component", {
             const [top, left, bottom, right] = this.getCanvasCorners();
             return left <= mousePos[0] && mousePos[0] <= right && top <= mousePos[1] && mousePos[1] <= bottom
         },
-        handleMouseDown(event) {
-            const mousePos = getMousePos(event);
+        handleClickDown(event) {
+            const mousePos = getClickPos(event);
             if (!this.mousePosWithinBound(mousePos)) return;
             this.drawingMode = true;
             this.mousePos.end = this.mousePos.start = mousePos;
         },
-        handleMouseMove(event) {
+        handleClickMove(event) {
             if (this.drawingMode) {
-                this.mousePos.end = getMousePos(event);
+                this.mousePos.end = getClickPos(event);
             }
         },
-        handleMouseUp() {
+        handleClickEnd() {
             this.drawingMode = false;
             this.resetMousePos();
             this.deleteFruit();
@@ -183,6 +190,12 @@ Vue.component("game-component", {
             this.mousePos.end = [0, 0];
             this.mousePos.start = this.mousePos.end;
         },
+        preventScrollingHandler(e) {
+            const mousePos = this.mousePos.start;
+            if (this.drawingMode === true || this.mousePosWithinBound(mousePos)) {
+                e.preventDefault();
+            }
+        },
         // Relaods canvas and fruit positions
         forceRerender() {
             this.reloadKey += 1;
@@ -195,6 +208,7 @@ Vue.component("game-component", {
     },
     mounted() {
         this.forceRerender();
+        document.body.addEventListener('touchmove', this.preventScrollingHandler, { passive: false });
         window.addEventListener("resize", () => {
             this.forceRerender();
             this.moveMousePosWithinBound();
@@ -245,3 +259,11 @@ Vue.component("game-component", {
     </div>
 </div>`
 })
+
+function getClickPos(event) {
+    if (event.type.match(new RegExp("touch", "g")) !== null) {
+        const touch = event.targetTouches[0];
+        return [touch.clientX, touch.clientY];
+    }
+    return [event.clientX, event.clientY];
+}

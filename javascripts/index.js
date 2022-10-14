@@ -111,7 +111,3 @@ const app = new Vue({
         document.querySelector(".loading-text").innerHTML = "";
     }
 });
-
-function getMousePos(event) {
-    return [event.clientX, event.clientY]
-}
