@@ -225,37 +225,39 @@ Vue.component("game-component", {
     },
     template:
     `
-<div class="game">
-    <header>
-        <div class="header-info">
-            <span>Score: {{score}}</span>
-            <span>Seed: {{gameSeed}}</span>
-            <span>Target Sum: {{settings.sumRequirement}}</span>
-            <span>Combo Scoring {{settings.comboScoring ? "On" : "Off"}},
-                  {{settings.weightedNumber ? "Weighted" : "Unweighted"}},
-                  Sum highlighting {{settings.highlightHelp ? "On" : "Off"}}</span>
-            <span>Time Remaining: {{timer.toFixed(1)}} / {{settings.timeLimit.toFixed(1)}}s</span>
+<div class="game-tab">
+    <div class="game-container">
+        <header>
+            <div class="header-info">
+                <span>Score: {{score}}</span>
+                <span>Seed: {{gameSeed}}</span>
+                <span>Target Sum: {{settings.sumRequirement}}</span>
+                <span>Combo Scoring {{settings.comboScoring ? "On" : "Off"}},
+                    {{settings.weightedNumber ? "Weighted" : "Unweighted"}},
+                    Sum highlighting {{settings.highlightHelp ? "On" : "Off"}}</span>
+                <span>Time Remaining: {{timer.toFixed(1)}} / {{settings.timeLimit.toFixed(1)}}s</span>
+            </div>
+            <div class="header-functions">
+                <button v-if="isGameOngoing" @click="timer = 0">Forfeit</button>
+                <button @click="quitGame">Back to Menu</button>
+            </div>
+        </header>
+        <div class="game-field">
+            <progress-bar :progress="timerProgress" class="timer"></progress-bar>
+            <table>
+                <tr v-for="(row, i) in grid">
+                    <td v-for="(fruit, j) in row">
+                        <fruit-component :fruit="fruit" 
+                                        :selectBoxPos="mousePos"
+                                        :key="reloadKey"
+                                        @change="state => updateSelectedState(i, j, state)">
+                            {{fruit.getValue()}}
+                        </fruit-component>
+                    </td>
+                </tr>
+            </table>
+            <selection-box-canvas :mouse-pos="mousePos" :key="reloadKey"/>
         </div>
-        <div class="header-functions">
-            <button v-if="isGameOngoing" @click="timer = 0">Forfeit</button>
-            <button @click="quitGame">Back to Menu</button>
-        </div>
-    </header>
-    <div class="game-field">
-        <progress-bar :progress="timerProgress" class="timer"></progress-bar>
-        <table>
-            <tr v-for="(row, i) in grid">
-                <td v-for="(fruit, j) in row">
-                    <fruit-component :fruit="fruit" 
-                                     :selectBoxPos="mousePos"
-                                     :key="reloadKey"
-                                     @change="state => updateSelectedState(i, j, state)">
-                        {{fruit.getValue()}}
-                    </fruit-component>
-                </td>
-            </tr>
-        </table>
-        <selection-box-canvas :mouse-pos="mousePos" :key="reloadKey"/>
     </div>
 </div>`
 })

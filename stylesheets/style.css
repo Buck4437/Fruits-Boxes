@@ -1,5 +1,6 @@
 body {
-    margin: 8px;
+    margin: 0px;
+    margin-top: 16px;
     padding: 0px;
     background-color: lightblue;
 }
@@ -27,26 +28,23 @@ h4 {
     display: inline;
 }
 
-.game {
-    min-width: calc(100vw - 16px);
-    min-height: calc(100vh - 16px);
+.game-tab {
+    min-width: 100vw;
+    min-height: calc(100vh - 32px);
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
 }
 
-.game-field {
-    display: inline-block;
-    position: relative;
-    background-color: lightgreen;
+.game-container {
+    margin: auto;
+    padding: 16px;
 }
 
 header {
     display: flex;
     width: 100%;
     flex-direction: row;
-    justify-content: space-around;  
+    justify-content: space-between;  
     align-items: flex-end;
     padding-bottom: 16px;
 }
@@ -58,6 +56,12 @@ header {
 
 .header-functions button {
     margin: 4px;
+}
+
+.game-field {
+    display: inline-block;
+    position: relative;
+    background-color: lightgreen;
 }
 
 table {
