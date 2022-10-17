@@ -4,6 +4,11 @@ Vue.component("fruit-component", {
         selectBoxPos: Object,
         getState: Boolean
     },
+    data() {
+        return {
+            avgPos: [0, 0]
+        }
+    },
     computed: {
         selected() {
             if (this.fruit.isDeleted()) return false;
@@ -12,16 +17,11 @@ Vue.component("fruit-component", {
             if (start[0] == end[0] && start[1] == end[1]) {
                 return false
             }
-
-            
-            const rect = this.$el.getBoundingClientRect();
-            const [posX, posY] = [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2]
-
-            const hitboxOffset = 2;
             const [scrollX, scrollY] = [window.scrollX, window.scrollY]
             const [minX, minY] = [Math.min(start[0], end[0]) + scrollX, Math.min(start[1], end[1]) + scrollY]
             const [maxX, maxY] = [Math.max(start[0], end[0]) + scrollX, Math.max(start[1], end[1]) + scrollY]
-            return minX - hitboxOffset <= posX && posX <= maxX + hitboxOffset && minY - hitboxOffset <= posY && posY <= maxY + hitboxOffset;
+            const [posX, posY] = this.avgPos;
+            return minX <= posX && posX <= maxX && minY <= posY && posY <= maxY;
         },
         path() {
             if (this.selected) {
@@ -36,6 +36,8 @@ Vue.component("fruit-component", {
         }
     },
     mounted() {
+        const rect = this.$el.getBoundingClientRect();
+        this.avgPos = [(rect.left + rect.right) / 2, (rect.top + rect.bottom) / 2]
     },
     template:
     `<div class="component fruit-component disable-select" :class="{'hidden': fruit.isDeleted()}">
