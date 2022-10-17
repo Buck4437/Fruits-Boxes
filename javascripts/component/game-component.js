@@ -191,9 +191,11 @@ Vue.component("game-component", {
             this.mousePos.start = this.mousePos.end;
         },
         preventScrollingHandler(e) {
-            const mousePos = this.mousePos.start;
-            if (this.drawingMode === true || this.mousePosWithinBound(mousePos)) {
-                e.preventDefault();
+            if (this.isGameOngoing) {
+                const mousePos = this.mousePos.start;
+                if (this.drawingMode === true || this.mousePosWithinBound(mousePos)) {
+                    e.preventDefault();
+                }
             }
         },
         // Relaods canvas and fruit positions
