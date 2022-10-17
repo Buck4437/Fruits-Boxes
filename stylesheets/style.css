@@ -66,6 +66,7 @@ header {
 
 table {
     margin: 0 auto;
+    padding: 8px;
 }
 
 .selection-box-canvas {
