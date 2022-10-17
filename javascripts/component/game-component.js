@@ -42,6 +42,12 @@ Vue.component("game-component", {
             return Object.values(sortedFruits).filter(
                 fruits => fruits.reduce(sumReducer, 0) == target
             )
+        },
+        status() {
+            if (this.settings.highlightHelp == true) {
+                return this.removableFruits.length == 0 ? "invalid" : "valid";
+            }
+            return "normal";
         }
     },
     methods: {
@@ -258,7 +264,7 @@ Vue.component("game-component", {
                     </td>
                 </tr>
             </table>
-            <selection-box-canvas :mouse-pos="mousePos" :key="reloadKey"/>
+            <selection-box-canvas :status="status" :mouse-pos="mousePos" :key="reloadKey"/>
         </div>
     </div>
 </div>`
